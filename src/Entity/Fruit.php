@@ -6,8 +6,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: FruitRepository::class)]
-class Fruits
+//#[ORM\Entity(repositoryClass: FruitRepository::class)]
+
+class Fruit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -92,14 +93,14 @@ class Fruits
     }
 
     /**
-     * @return Collection|Nutritions[]
+     * @return Collection|Nutrition[]
      */
     public function getNutritions(): Collection
     {
         return $this->nutritions;
     }
 
-    public function addNutrition(Nutritions $nutrition): self
+    public function addNutrition(Nutrition $nutrition): self
     {
         if (!$this->nutritions->contains($nutrition)) {
             $this->nutritions[] = $nutrition;
@@ -109,7 +110,7 @@ class Fruits
         return $this;
     }
 
-    public function removeNutrition(Nutritions $nutrition): self
+    public function removeNutrition(Nutrition $nutrition): self
     {
         if ($this->nutritions->contains($nutrition)) {
             $this->nutritions->removeElement($nutrition);

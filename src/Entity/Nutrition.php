@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=NutritionsRepository::class)
  */
-class Nutritions
+class Nutrition
 {
     /**
      * @ORM\Id
@@ -43,9 +43,9 @@ class Nutritions
     private ?string $protein = null;
 
     /**
-     * @ORM\OneToOne(targetEntity=Fruits::class, mappedBy="nutrition")
+     * @ORM\OneToOne(targetEntity=Fruit::class, mappedBy="nutrition")
      */
-    private ?Fruits $fruit = null;
+    private ?Fruit $fruit = null;
 
     public function getId(): ?int
     {
@@ -112,12 +112,12 @@ class Nutritions
         return $this;
     }
 
-    public function getFruit(): ?Fruits
+    public function getFruit(): ?Fruit
     {
         return $this->fruit;
     }
 
-    public function setFruit(?Fruits $fruit): self
+    public function setFruit(?Fruit $fruit): self
     {
         $this->fruit = $fruit;
 

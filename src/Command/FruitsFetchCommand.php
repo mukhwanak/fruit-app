@@ -46,8 +46,8 @@ namespace App\Command;
 
 namespace App\Command;
 
-use App\Entity\Fruits;
-use App\Entity\Nutritions;
+use App\Entity\Fruit;
+use App\Entity\Nutrition;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -86,14 +86,14 @@ class FruitsFetchCommand extends Command
 				$fruitsData = json_decode($response->getContent(), true);
 
 				foreach ($fruitsData as $fruitData) {
-					$fruit = new Fruits();
+					$fruit = new Fruit();
 					$fruit->setName($fruitData['name']);
 					$fruit->setFamily($fruitData['family']);
 					$fruit->setOrder($fruitData['order']);
 					$fruit->setGenus($fruitData['genus']);
 
 					// Add or update nutritions for the fruit
-					$nutrition = $fruit->getNutritions()->first() ?: new Nutritions();
+					$nutrition = $fruit->getNutritions()->first() ?: new Nutrition();
 					$nutrition->setCalories($fruitData['calories']);
 					$nutrition->setFat($fruitData['fat']);
 					$nutrition->setSugar($fruitData['sugar']);
@@ -106,7 +106,7 @@ class FruitsFetchCommand extends Command
 					$this->entityManager->flush();
 				}
 
-				$output->writeln('Fruits data fetched and updated in the database successfully!');
+				$output->writeln('Fruit data fetched and updated in the database successfully!');
 			} else {
 				$output->writeln('Failed to fetch fruits data from external source. HTTP status code: ' . $response->getStatusCode());
 			}
