@@ -71,7 +71,7 @@ php bin/console doctrine:migrations:migrate
 php bin/console server:run
 ```
 
-2. Compile and run the Vue.js (or TypeScript) frontend:
+2. Compile and run the Vue.js Frontend:
 
 ```
 npm run dev
@@ -100,5 +100,3 @@ php bin/console fruits:fetch
 ```
 php bin/phpunit
 ```
-
-2. Write additional tests as needed to ensure the correctness and reliability of the application.

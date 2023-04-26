@@ -2,119 +2,86 @@
 
 namespace App\Command;
 
-//use Symfony\Component\Console\Attribute\AsCommand;
-//use Symfony\Component\Console\Command\Command;
-//use Symfony\Component\Console\Input\InputArgument;
-//use Symfony\Component\Console\Input\InputInterface;
-//use Symfony\Component\Console\Input\InputOption;
-//use Symfony\Component\Console\Output\OutputInterface;
-//use Symfony\Component\Console\Style\SymfonyStyle;
-
-//#[AsCommand(
-//    name: 'fruits:fetch',
-//    description: 'Add a short description for your command',
-//)]
-//class FruitsFetchCommand extends Command
-//{
-//    protected function configure(): void
-//    {
-//        $this
-//            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-//            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
-//        ;
-//    }
-//
-//    protected function execute(InputInterface $input, OutputInterface $output): int
-//    {
-//        $io = new SymfonyStyle($input, $output);
-//        $arg1 = $input->getArgument('arg1');
-//
-//        if ($arg1) {
-//            $io->note(sprintf('You passed an argument: %s', $arg1));
-//        }
-//
-//        if ($input->getOption('option1')) {
-//            // ...
-//        }
-//
-//        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
-//
-//        return Command::SUCCESS;
-//    }
-//}
-
-
-namespace App\Command;
-
 use App\Entity\Fruit;
 use App\Entity\Nutrition;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Client as GuzzleClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpClient\Exception\ClientException;
-use Symfony\Component\HttpClient\Exception\TransportException;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class FruitsFetchCommand extends Command
 {
-	private $entityManager;
+    private $entityManager;
 
-	public function __construct(EntityManagerInterface $entityManager)
-	{
-		$this->entityManager = $entityManager;
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
 
-		parent::__construct();
-	}
+        parent::__construct();
+    }
 
-	protected function configure()
-	{
-		$this
-			->setName('fruits:fetch')
-			->setDescription('Fetches fruits data from external source')
-			->setHelp('This command fetches fruits data from external source and updates the database');
-	}
+    protected function configure()
+    {
+        $this
+            ->setName('fruits:fetch')
+            ->setDescription('Fetches fruits data from external source')
+            ->setHelp('This command fetches fruits data from external source and updates the database');
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output)
-	{
-		$httpClient = HttpClient::create();
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $httpClient = new GuzzleClient([
+            'verify' => false,
+        ]);
 
-		try {
-			$response = $httpClient->request('GET', 'https://fruityvice.com/api/fruit/all');
-			if ($response->getStatusCode() == 200) {
-				$fruitsData = json_decode($response->getContent(), true);
+        try {
+            $response = $httpClient->request('GET', 'https://fruityvice.com/api/fruit/all');
 
-				foreach ($fruitsData as $fruitData) {
-					$fruit = new Fruit();
-					$fruit->setName($fruitData['name']);
-					$fruit->setFamily($fruitData['family']);
-					$fruit->setOrder($fruitData['order']);
-					$fruit->setGenus($fruitData['genus']);
+            if ($response->getStatusCode() == 200) {
+                $fruitsData = json_decode($response->getBody(), true);
 
-					// Add or update nutritions for the fruit
-					$nutrition = $fruit->getNutritions()->first() ?: new Nutrition();
-					$nutrition->setCalories($fruitData['calories']);
-					$nutrition->setFat($fruitData['fat']);
-					$nutrition->setSugar($fruitData['sugar']);
-					$nutrition->setCarbohydrates($fruitData['carbohydrates']);
-					$nutrition->setProtein($fruitData['protein']);
+                foreach ($fruitsData as $fruitData) {
+                    $fruit = $this->entityManager->getRepository(Fruit::class)->findOneBy(['name' => $fruitData['name']]);
 
-					$fruit->setNutritions($nutrition);
+                    if (!$fruit) {
+                        $fruit = new Fruit();
+                        $fruit->setName($fruitData['name']);
+                        $fruit->setFamily($fruitData['family']);
+                        $fruit->setOrder($fruitData['order']);
+                        $fruit->setGenus($fruitData['genus']);
 
-					$this->entityManager->persist($fruit);
-					$this->entityManager->flush();
-				}
+                        $this->entityManager->persist($fruit);
+                    }
 
-				$output->writeln('Fruit data fetched and updated in the database successfully!');
-			} else {
-				$output->writeln('Failed to fetch fruits data from external source. HTTP status code: ' . $response->getStatusCode());
-			}
-		} catch (ClientException|TransportException|BadRequestHttpException $e) {
-			// Handle exceptions that may occur during the HTTP request
-			$output->writeln('Failed to fetch fruits data from external source. Exception: ' . $e->getMessage());
-		}
+                    // Add or update nutritions for the fruit
+                    $nutritions = $fruit->getNutritions();
+                    if ($nutritions->isEmpty()) {
+                        $nutrition = new Nutrition();
+                        $fruit->addNutrition($nutrition);
+                    } else {
+                        $nutrition = $nutritions->first();
+                    }
+                    $nutrition->setCalories($fruitData['nutritions']['calories']);
+                    $nutrition->setFat($fruitData['nutritions']['fat']);
+                    $nutrition->setSugar($fruitData['nutritions']['sugar']);
+                    $nutrition->setCarbohydrates($fruitData['nutritions']['carbohydrates']);
+                    $nutrition->setProtein($fruitData['nutritions']['protein']);
 
-		return Command::SUCCESS;
-	}
+                    $this->entityManager->persist($nutrition);
+                }
+
+                $this->entityManager->flush();
+
+                $output->writeln('Fruit data fetched and updated in the database successfully!');
+            } else {
+                $output->writeln('Failed to fetch fruits data from external source. HTTP status code: ' . $response->getStatusCode());
+            }
+        } catch (\Exception $e) {
+            // Handle exceptions that may occur during the HTTP request or database update
+            $output->writeln('Failed to fetch or update fruits data. Exception: ' . $e->getMessage());
+        }
+
+        return Command::SUCCESS;
+    }
 }

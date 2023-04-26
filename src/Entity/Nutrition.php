@@ -5,42 +5,44 @@ namespace App\Entity;
 use App\Repository\NutritionsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=NutritionsRepository::class)
- */
+#[ORM\Entity(repositoryClass: NutritionsRepository::class)]
 class Nutrition
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private ?int $id = null;
+    #[ORM\Id]
+	#[ORM\GeneratedValue]
+	#[ORM\Column(type: 'integer')]
+	private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
+	#[ORM\Column(type: 'string', length: 255, nullable: true)]
+
     private ?string $calories = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $fat = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+	private ?string $fat = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $sugar = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+	private ?string $sugar = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $carbohydrates = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+	private ?string $carbohydrates = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $protein = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+	private ?string $protein = null;
 
     /**
      * @ORM\OneToOne(targetEntity=Fruit::class, mappedBy="nutrition")
