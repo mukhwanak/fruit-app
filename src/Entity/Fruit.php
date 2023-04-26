@@ -21,7 +21,7 @@ class Fruit
 	#[ORM\Column(type: 'string', length: 255, nullable: true)]
 	private ?string $family = null;
 
-	#[ORM\Column(type: 'string', length: 255, nullable: true)]
+	#[ORM\Column(name:'`order`',type: 'string', length: 255, nullable: true)]
 	private ?string $order = null;
 
 	#[ORM\Column(type: 'string', length: 255, nullable: true)]
