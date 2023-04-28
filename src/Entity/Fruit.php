@@ -30,7 +30,7 @@ class Fruit
 	/**
 	 * @ORM\OneToMany(targetEntity="App\Entity\Nutrition", mappedBy="fruit", cascade={"persist", "remove"})
 	 */
-	private ArrayCollection $nutritions;
+	private Collection $nutritions;
 
 	public function __construct()
 	{
@@ -97,7 +97,7 @@ class Fruit
 	 */
 	public function getNutritions(): Collection
 	{
-		return $this->nutritions;
+		return $this->nutritions ?? new ArrayCollection();
 	}
 
 	public function addNutrition(Nutrition $nutrition): self

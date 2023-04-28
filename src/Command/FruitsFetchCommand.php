@@ -45,6 +45,7 @@ class FruitsFetchCommand extends Command
                     $fruit = $this->entityManager->getRepository(Fruit::class)->findOneBy(['name' => $fruitData['name']]);
 
                     if (!$fruit) {
+                        // Create a new fruit if it does not exist
                         $fruit = new Fruit();
                         $fruit->setName($fruitData['name']);
                         $fruit->setFamily($fruitData['family']);
@@ -52,8 +53,13 @@ class FruitsFetchCommand extends Command
                         $fruit->setGenus($fruitData['genus']);
 
                         $this->entityManager->persist($fruit);
-                        $this->entityManager->flush();
-                    }
+//                        $this->entityManager->flush();
+                    }else {
+                    // Update the properties of an existing fruit
+                    $fruit->setFamily($fruitData['family']);
+                    $fruit->setOrder($fruitData['order']);
+                    $fruit->setGenus($fruitData['genus']);
+                }
 
                     // Add or update nutritions for the fruit
                     $nutritions = $fruit->getNutritions();
