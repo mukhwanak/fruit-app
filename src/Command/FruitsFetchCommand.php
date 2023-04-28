@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Fruit;
 use App\Entity\Nutrition;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client as GuzzleClient;
 use Symfony\Component\Console\Command\Command;
@@ -13,10 +14,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 class FruitsFetchCommand extends Command
 {
     private EntityManagerInterface $entityManager;
+    private $emailService;
+    private string $adminEmail;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, EmailService $emailService)
     {
         $this->entityManager = $entityManager;
+         $this->emailService = $emailService;
 
         parent::__construct();
     }
@@ -82,9 +86,26 @@ class FruitsFetchCommand extends Command
                 }
 
                 $output->writeln('Fruit data fetched and updated in the database successfully!');
+                // Send email notification
+//                $this->emailService->sendEmailNotification('Fruit data fetched and updated in the database successfully!');
+
+                 // Send email notification
+//                $recipientEmail = getenv('NOTIFICATION_EMAIL');
+                $subject = 'Fruit data fetched and updated in the database';
+                $body = 'Fruit data fetched and updated in the database successfully!';
+
             } else {
                 $output->writeln('Failed to fetch fruits data from external source. HTTP status code: ' . $response->getStatusCode());
+
+                 // Send email notification
+                 // Send email notification
+//                $recipientEmail = getenv('NOTIFICATION_EMAIL');
+                $subject = 'Failed to fetch fruits data from external source';
+                $body = 'Failed to fetch fruits data from external source. HTTP status code: ' . $response->getStatusCode();
+
             }
+
+            $this->emailService->sendEmail($subject, $body);
         } catch (\Exception $e) {
             // Handle exceptions that may occur during the HTTP request or database update
             $output->writeln('Failed to fetch or update fruits data. Exception: ' . $e->getMessage());
