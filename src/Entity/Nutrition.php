@@ -46,6 +46,7 @@ class Nutrition
 
     /**
      * @ORM\OneToOne(targetEntity=Fruit::class, mappedBy="nutrition")
+     * @ORM\JoinColumn(name="fruit_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private ?Fruit $fruit = null;
 
